@@ -1,491 +1,594 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MarssovDev — Разработка Telegram-ботов, Сайтов и Копирайтинг</title>
+    <title>MarssovDev — Fullstack Web & Telegram Solutions</title>
+    
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com"></script>
+    <script src="https://tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: '#06080F',
+                        card: 'rgba(15, 21, 38, 0.65)',
+                        accent: '#3B82F6',
+                        neon: '#00F0FF',
+                        purple: '#8B5CF6'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 5s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-8px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --bg-color: #090d16;
-            --card-bg: #111827;
-            --card-hover: #161f33;
-            --accent: #3b82f6;
-            --accent-purple: #8b5cf6;
-            --accent-glow: rgba(59, 130, 246, 0.35);
-            --secondary: #10b981;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #1e293b;
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            scroll-behavior: smooth;
-        }
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
+            background-color: #06080F;
+            color: #F8FAFC;
             overflow-x: hidden;
         }
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(9, 13, 22, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            z-index: 1000;
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 20%, #000 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 20%, #000 40%, transparent 100%);
         }
-        .logo {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: var(--text-main);
-            text-decoration: none;
-            letter-spacing: 0.5px;
+        .bento-card {
+            background: rgba(15, 22, 38, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
         }
-        .logo span { color: var(--accent); }
-        nav { display: flex; align-items: center; gap: 25px; }
-        nav a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: 0.3s;
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(139, 92, 246, 0.1), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
         }
-        nav a:hover { color: var(--accent); }
-        .nav-cta {
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--accent) !important;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(59, 130, 246, 0.15);
         }
-        .nav-cta:hover { background: var(--accent); color: white !important; }
-        .hero {
-            padding: 145px 5% 80px;
-            max-width: 1100px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16, 185, 129, 0.12);
-            color: var(--secondary);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 22px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        .pulse {
-            width: 8px;
-            height: 8px;
-            background: var(--secondary);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--secondary);
-        }
-        .hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 20px; line-height: 1.2; }
-        .hero h1 span {
-            background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+        .bento-card:hover::before { opacity: 1; }
+        .text-gradient {
+            background: linear-gradient(135deg, #FFFFFF 0%, #93C5FD 50%, #3B82F6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .hero p { color: var(--text-muted); font-size: 1.15rem; max-width: 740px; margin: 0 auto 35px; }
-        .hero-btns { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .btn {
-            padding: 14px 28px;
-            border-radius: 10px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: 0.3s;
-            cursor: pointer;
-            border: none;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .btn-primary { background: var(--accent); color: white; box-shadow: 0 0 22px var(--accent-glow); }
-        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
-        .btn-outline { background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-outline:hover { border-color: var(--accent); transform: translateY(-2px); }
-        section { padding: 70px 5%; max-width: 1100px; margin: 0 auto; }
-        .section-title { font-size: 2rem; margin-bottom: 10px; text-align: center; }
-        .section-subtitle { color: var(--text-muted); text-align: center; margin-bottom: 40px; }
-        .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 35px; flex-wrap: wrap; }
-        .tab-btn {
-            background: var(--card-bg);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #06080F; }
+        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+        .task-checkbox:checked + .task-label {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: #3B82F6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
         }
-        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-        .tab-content { display: none; }
-        .tab-content.active {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .skill-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            padding: 25px;
-            border-radius: 14px;
-            transition: 0.3s;
-        }
-        .skill-card:hover { border-color: var(--accent); background: var(--card-hover); transform: translateY(-4px); }
-        .skill-icon { font-size: 2rem; margin-bottom: 15px; }
-        .skill-card h3 { margin-bottom: 10px; font-size: 1.15rem; }
-        .skill-card p { color: var(--text-muted); font-size: 0.92rem; }
-        .stack-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 35px; }
-        .stack-pill {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid var(--border);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: #cbd5e1;
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-            gap: 25px;
-        }
-        .project-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: 0.3s;
-        }
-        .project-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .project-header {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 25px;
-            border-bottom: 1px solid var(--border);
-        }
-        .project-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; }
-        .project-header h3 { margin-top: 8px; font-size: 1.25rem; }
-        .project-body { padding: 25px; flex-grow: 1; }
-        .project-body p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; }
-        .tech-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-        .tech-tag {
-            background: rgba(59, 130, 246, 0.1);
-            color: #60a5fa;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-        }
-        .project-footer { padding: 15px 25px; border-top: 1px solid var(--border); background: rgba(9, 13, 22, 0.4); }
-        .project-footer a {
-            color: var(--text-main);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .project-footer a:hover { color: var(--accent); }
-        .order-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 800px;
-            margin: 0 auto;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        }
-        .category-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent);
-            font-weight: 700;
-            margin: 20px 0 10px;
-            display: block;
-        }
-        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-        .check-item {
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            padding: 12px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.92rem;
-            transition: 0.2s;
-        }
-        .check-item:hover { border-color: var(--accent); }
-        .check-item input { accent-color: var(--accent); width: 18px; height: 18px; }
-        textarea {
-            width: 100%;
-            background: var(--bg-color);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 15px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            resize: vertical;
-            min-height: 100px;
-            margin-top: 8px;
-        }
-        textarea:focus { outline: none; border-color: var(--accent); }
-        footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; }
-        .footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
-        .footer-links a { color: var(--text-main); text-decoration: none; font-weight: 600; }
-        .footer-links a:hover { color: var(--accent); }
-        @media (max-width: 650px) {
-            .hero h1 { font-size: 2.1rem; }
-            nav a:not(.nav-cta) { display: none; }
-            .order-box { padding: 25px; }
-        }
+        .task-checkbox:checked + .task-label .check-box { background: #3B82F6; border-color: #3B82F6; }
+        .task-checkbox:checked + .task-label .check-icon { opacity: 1; transform: scale(1); }
     </style>
 </head>
-<body>
-    <header>
-        <a href="#" class="logo">Marssov<span>Dev</span></a>
-        <nav>
-            <a href="#services">Услуги</a>
-            <a href="#projects">Кейсы</a>
-            <a href="#order">Заказать</a>
-            <a href="tg://resolve?domain=marssovq">ТГ-Канал</a>
-            <a href="tg://resolve?domain=MarssovDev" class="nav-cta">@MarssovDev</a>
-        </nav>
+
+<body class="antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Фоновые эффекты -->
+    <div class="fixed inset-0 bg-grid pointer-events-none z-0"></div>
+    <div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/15 rounded-full blur-[130px] pointer-events-none animate-pulse-slow z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/15 rounded-full blur-[130px] pointer-events-none animate-pulse-slow z-0"></div>
+
+    <!-- Навигация -->
+    <header class="sticky top-0 z-50 border-b border-white/5 bg-[#06080F]/80 backdrop-blur-xl">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-2 font-bold text-xl tracking-tight">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_12px_#3B82F6]"></span>
+                <span>Marssov<span class="text-blue-500">Dev</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+                <a href="#services" class="hover:text-white transition">Услуги и Стек</a>
+                <a href="#cases" class="hover:text-white transition">Кейсы</a>
+                <a href="#calculator" class="hover:text-white transition">Рассчитать проект</a>
+            </nav>
+
+            <a href="tg://resolve?domain=marssov" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-all text-sm font-medium shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>@marssov</span>
+            </a>
+        </div>
     </header>
 
-    <div class="hero">
-        <div class="status-badge"><span class="pulse"></span> Свободен для новых проектов</div>
-        <h1>Разработка <span>Telegram-ботов, Сайтов</span> и продающий Копирайтинг</h1>
-        <p>Комплексный запуск проектов под ключ: от написания цепляющих текстов и воронок продаж до создания сайтов, веб-админок и ботов с автоматическим приёмом оплат.</p>
-        <div class="hero-btns">
-            <a href="#order" class="btn btn-primary">🚀 Собрать заказ под ключ</a>
-            <a href="tg://resolve?domain=marssovq" class="btn btn-outline">📢 Портфолио и отзывы в ТГ</a>
-        </div>
-    </div>
+    <main class="relative z-10">
+        <!-- HERO СЕКЦИЯ -->
+        <section class="pt-16 pb-24 sm:pt-24 sm:pb-32 px-4 sm:px-6 max-w-6xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs sm:text-sm font-medium mb-8 animate-float">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Открыт к новым проектам и сложным задачам</span>
+            </div>
 
-    <section id="services">
-        <h2 class="section-title">Мои компетенции</h2>
-        <p class="section-subtitle">Выберите направление, чтобы посмотреть, чем я могу быть полезен вашему проекту</p>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('dev', this)">💻 Веб-разработка и Боты (Junior+)</button>
-            <button class="tab-btn" onclick="switchTab('copy', this)">✍️ Копирайтинг и Контент</button>
-        </div>
-        <div id="tab-dev" class="tab-content active">
-            <div class="skill-card">
-                <div class="skill-icon">🤖</div>
-                <h3>Telegram-боты под ключ</h3>
-                <p>Магазины цифровых товаров, закрытые клубы по подписке, реферальные системы, воронки и интеграция ИИ-ассистентов.</p>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon">💳</div>
-                <h3>Автооплата в боте</h3>
-                <p>Подключение <strong>Telegram Stars</strong> и <strong>CryptoBot (USDT)</strong> напрямую в бота с мгновенной выдачей доступа после транзакции.</p>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon">📊</div>
-                <h3>Веб-админ панели</h3>
-                <p>Удобное управление проектом в браузере или боте: статистика в реальном времени, база пользователей, логи и рассылки.</p>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon">🌐</div>
-                <h3>Сайты и деплой 24/7</h3>
-                <p>Адаптивная вёрстка лендингов и сайтов под телефоны и ПК. Настройка непрерывного деплоя на сервер через GitHub и Railway.</p>
-            </div>
-        </div>
-        <div id="tab-copy" class="tab-content">
-            <div class="skill-card">
-                <div class="skill-icon">📢</div>
-                <h3>Посты для Telegram-каналов</h3>
-                <p>Информационные, экспертные и вовлекающие посты. Составление контент-планов, которые удерживают аудиторию.</p>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon">🎯</div>
-                <h3>Тексты для воронок в ботах</h3>
-                <p>Приветственные цепочки сообщений, прогревы перед покупкой, продающие описания тарифов и тексты кнопок.</p>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon">🔥</div>
-                <h3>Рекламные креативы (Посевы)</h3>
-                <p>Цепляющие рекламные посты для закупки трафика в Telegram, которые приносят целевых подписчиков по низкой цене.</p>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon">📝</div>
-                <h3>Тексты для сайтов и лендингов</h3>
-                <p>Проработка структуры страницы, сильные заголовки, офферы и закрытие болей клиентов для высокой конверсии.</p>
-            </div>
-        </div>
-        <div class="stack-bar">
-            <span class="stack-pill">Python (aiogram)</span>
-            <span class="stack-pill">Node.js</span>
-            <span class="stack-pill">HTML5 / CSS3 / JS</span>
-            <span class="stack-pill">Telegram Stars & CryptoBot API</span>
-            <span class="stack-pill">GitHub & Railway</span>
-            <span class="stack-pill">Базы данных (SQL)</span>
-            <span class="stack-pill">Продающий копирайтинг</span>
-        </div>
-    </section>
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+                Создаю IT-продукты,<br>
+                <span class="text-gradient">которые приносят прибыль</span>
+            </h1>
 
-    <section id="projects">
-        <h2 class="section-title">Реализованные проекты</h2>
-        <p class="section-subtitle">Живые примеры систем и отзывы клиентов доступны в моём Telegram-канале</p>
-        <div class="projects-grid">
-            <div class="project-card">
+            <p class="max-w-2xl mx-auto text-base sm:text-lg text-slate-400 leading-relaxed mb-10">
+                Fullstack-разработка под ключ для бизнеса и игровой индустрии (CRMP/SAMP): 
+                <span class="text-slate-200 font-medium">веб-приложения, Telegram Mini Apps, сложные боты, лаунчеры и админ-панели с логами</span> 
+                с автоматическим приёмом оплат.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#calculator" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-base shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_45px_rgba(59,130,246,0.6)] transition-all transform hover:-translate-y-0.5">
+                    <i data-lucide="rocket" class="w-5 h-5"></i>
+                    <span>Собрать ТЗ и узнать цену</span>
+                </a>
+                
+                <a href="tg://resolve?domain=marssovq" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bento-card text-slate-200 hover:text-white font-semibold text-base">
+                    <i data-lucide="layers" class="w-5 h-5 text-blue-400"></i>
+                    <span>Канал с кейсами и отзывами</span>
+                </a>
+            </div>
+
+            <!-- Мини-статистика -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto mt-16 pt-10 border-t border-white/5">
                 <div>
-                    <div class="project-header">
-                        <span class="project-tag">Бот + Админ-панель + ИИ</span>
-                        <h3>Высоконагруженный бот управления проектом</h3>
-                    </div>
-                    <div class="project-body">
-                        <p>Система на 700+ пользователей с живой статистикой, логами, системой промокодов, реферальной программой и встроенным ИИ-ассистентом.</p>
-                        <div class="tech-tags">
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">Admin Panel</span>
-                            <span class="tech-tag">AI Assistant</span>
-                            <span class="tech-tag">24/7 Server</span>
-                        </div>
-                    </div>
+                    <div class="text-2xl sm:text-3xl font-bold text-white font-mono">100%</div>
+                    <div class="text-xs sm:text-sm text-slate-400 mt-1">Запуск под ключ + деплой</div>
                 </div>
-                <div class="project-footer">
-                    <a href="tg://resolve?domain=marssovq">Смотреть скриншоты в канале <span>→</span></a>
-                </div>
-            </div>
-            <div class="project-card">
                 <div>
-                    <div class="project-header">
-                        <span class="project-tag">Веб-разработка</span>
-                        <h3>Адаптивный игровой/бизнес сайт под ключ</h3>
-                    </div>
-                    <div class="project-body">
-                        <p>Современный тёмный UI-дизайн, полная адаптация под мобильные экраны, интерактивный блок FAQ (аккордеон) и связка с Telegram.</p>
-                        <div class="tech-tags">
-                            <span class="tech-tag">HTML5 / CSS3</span>
-                            <span class="tech-tag">JavaScript</span>
-                            <span class="tech-tag">Dark UI</span>
-                            <span class="tech-tag">GitHub Pages</span>
-                        </div>
-                    </div>
+                    <div class="text-2xl sm:text-3xl font-bold text-blue-400 font-mono">24/7</div>
+                    <div class="text-xs sm:text-sm text-slate-400 mt-1">Стабильность на VPS</div>
                 </div>
-                <div class="project-footer">
-                    <a href="tg://resolve?domain=marssovq">Смотреть обзор в портфолио <span>→</span></a>
-                </div>
-            </div>
-            <div class="project-card">
                 <div>
-                    <div class="project-header">
-                        <span class="project-tag">Комплексный заказ</span>
-                        <h3>Сайт + Форум + Бот с админкой (Отзыв)</h3>
+                    <div class="text-2xl sm:text-3xl font-bold text-white font-mono">TMA & Web</div>
+                    <div class="text-xs sm:text-sm text-slate-400 mt-1">Современный стек</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-400 font-mono">0 ₽</div>
+                    <div class="text-xs sm:text-sm text-slate-400 mt-1">За консультацию и оценку</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ УСЛУГ И СТЕКА (BENTO GRID) -->
+        <section id="services" class="py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 reveal">
+                <div>
+                    <span class="text-blue-400 font-mono text-sm uppercase tracking-wider">// Компетенции</span>
+                    <h2 class="text-3xl sm:text-4xl font-bold mt-2">Что я разрабатываю</h2>
+                </div>
+
+                <!-- Переключатель ниш -->
+                <div class="inline-flex p-1.5 rounded-xl bg-white/5 border border-white/10 self-start">
+                    <button onclick="filterServices('all')" id="btn-all" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white transition">Все направления</button>
+                    <button onclick="filterServices('business')" id="btn-business" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">Бизнес и Telegram</button>
+                    <button onclick="filterServices('gaming')" id="btn-gaming" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">CRMP / SAMP</button>
+                </div>
+            </div>
+
+            <!-- Bento Сетка услуг -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Карточка 1 (Большая) -->
+                <div class="service-card bento-card rounded-3xl p-7 md:col-span-2 reveal" data-category="business gaming">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-6">
+                        <i data-lucide="globe" class="w-6 h-6"></i>
                     </div>
-                    <div class="project-body">
-                        <p>Полный запуск экосистемы для клиента в сжатые сроки. Подтверждённый отзыв заказчика о скорости и качестве работы есть в канале.</p>
-                        <div class="tech-tags">
-                            <span class="tech-tag">Под ключ</span>
-                            <span class="tech-tag">Stars / CryptoBot</span>
-                            <span class="tech-tag">Отзыв клиента</span>
+                    <h3 class="text-xl sm:text-2xl font-bold mb-3">Веб-приложения и Сайты под ключ</h3>
+                    <p class="text-slate-400 text-sm sm:text-base leading-relaxed mb-6">
+                        От продающих лендингов до высоконагруженных порталов с личными кабинетами, авто-донатом и интеграцией с базами данных. Адаптив под любые экраны и высокая скорость загрузки.
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 rounded-lg bg-white/5 text-xs font-mono text-slate-300">FastAPI / Node.js</span>
+                        <span class="px-3 py-1 rounded-lg bg-white/5 text-xs font-mono text-slate-300">Modern UI/UX</span>
+                        <span class="px-3 py-1 rounded-lg bg-white/5 text-xs font-mono text-slate-300">Авто-оплата</span>
+                    </div>
+                </div>
+
+                <!-- Карточка 2 -->
+                <div class="service-card bento-card rounded-3xl p-7 reveal" data-category="business">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-6">
+                        <i data-lucide="smartphone" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Telegram Mini Apps</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Полноценные веб-приложения прямо внутри Telegram: магазины, сервисы бронирования, игровые механики и веб-интерфейсы для ботов.
+                    </p>
+                    <span class="text-xs font-mono text-purple-400">WebApp API • Seamless Auth</span>
+                </div>
+
+                <!-- Карточка 3 (Игровая индустрия) -->
+                <div class="service-card bento-card rounded-3xl p-7 reveal" data-category="gaming">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-6">
+                        <i data-lucide="gamepad-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Решения для CRMP / SAMP</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Сайты и форумы для проектов уровня Black Russia, кастомные лаунчеры с загрузкой кэша, привязка игровых аккаунтов к ТГ и авто-выдача доната.
+                    </p>
+                    <span class="text-xs font-mono text-amber-400">Launcher • Forum • Auto-Donate</span>
+                </div>
+
+                <!-- Карточка 4 -->
+                <div class="service-card bento-card rounded-3xl p-7 reveal" data-category="business gaming">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-6">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Веб-админки и Логи</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Удобные панели управления в браузере: аналитика в реальном времени, база пользователей, рассылки и система логов для полного контроля администрации.
+                    </p>
+                    <span class="text-xs font-mono text-emerald-400">Live Logs • Role Access</span>
+                </div>
+
+                <!-- Карточка 5 -->
+                <div class="service-card bento-card rounded-3xl p-7 reveal" data-category="business gaming">
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-6">
+                        <i data-lucide="bot" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Боты и Приём оплат</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Telegram-боты любой сложности, воронки продаж, подписки. Интеграция CryptoBot (USDT), Telegram Stars и эквайринга с мгновенной выдачей доступа.
+                    </p>
+                    <span class="text-xs font-mono text-cyan-400">aiogram • CryptoBot • Stars</span>
+                </div>
+            </div>
+
+            <!-- Блок стека технологий -->
+            <div class="mt-8 bento-card rounded-3xl p-6 sm:p-8 reveal">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <h4 class="font-bold text-lg flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-5 h-5 text-blue-400"></i>
+                        <span>Технический стек</span>
+                    </h4>
+                    <span class="text-xs text-slate-400">Чистый, поддерживаемый код и деплой на VPS / Railway</span>
+                </div>
+                <div class="flex flex-wrap gap-2.5">
+                    <span class="px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-sm font-mono">Python (aiogram / FastAPI)</span>
+                    <span class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-sm font-mono">Node.js</span>
+                    <span class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-sm font-mono">HTML5 / CSS3 / Tailwind</span>
+                    <span class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-sm font-mono">JavaScript (ES6+)</span>
+                    <span class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-sm font-mono">PostgreSQL / SQLite</span>
+                    <span class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-sm font-mono">REST API / Webhooks</span>
+                    <span class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-200 text-sm font-mono">Git / Linux VPS / Docker</span>
+                    <span class="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-mono">+ Продающий копирайтинг</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ КЕЙСОВ -->
+        <section id="cases" class="py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+            <div class="mb-12 reveal">
+                <span class="text-blue-400 font-mono text-sm uppercase tracking-wider">// Портфолио</span>
+                <h2 class="text-3xl sm:text-4xl font-bold mt-2">Реализованные проекты</h2>
+                <p class="text-slate-400 mt-2">Примеры систем, которые уже работают и приносят результат клиентам</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Кейс 1 -->
+                <div class="bento-card rounded-3xl p-6 flex flex-col justify-between reveal">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 rounded-full bg-blue-500/15 text-blue-400 text-xs font-mono font-semibold">BOT + ADMIN + AI</span>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-500"></i>
                         </div>
+                        <h3 class="text-xl font-bold mb-3">Высоконагруженный бот управления проектом</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Система на 700+ активных пользователей с живой статистикой в веб-панели, логами действий, реферальной программой, промокодами и встроенным ИИ-ассистентом.
+                        </p>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap gap-1.5 mb-5">
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">Python</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">Web Admin</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">24/7 VPS</span>
+                        </div>
+                        <a href="tg://resolve?domain=marssovq" class="w-full py-3 rounded-xl bg-white/5 hover:bg-blue-600 text-center text-sm font-medium text-white transition block">
+                            Смотреть скриншоты в ТГ →
+                        </a>
                     </div>
                 </div>
-                <div class="project-footer">
-                    <a href="tg://resolve?domain=marssovq">Читать отзыв в @marssovq <span>→</span></a>
+
+                <!-- Кейс 2 -->
+                <div class="bento-card rounded-3xl p-6 flex flex-col justify-between reveal">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-mono font-semibold">CRMP / SAMP ECOSYSTEM</span>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Игровой портал + Админ-логи + Лаунчер</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Комплексная упаковка игрового проекта: современный сайт с авто-донатом, форум, лаунчер и браузерная панель логов для отслеживания действий администрации.
+                        </p>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap gap-1.5 mb-5">
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">Fullstack</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">Logs Panel</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">Payment API</span>
+                        </div>
+                        <a href="tg://resolve?domain=marssovq" class="w-full py-3 rounded-xl bg-white/5 hover:bg-blue-600 text-center text-sm font-medium text-white transition block">
+                            Смотреть обзор в ТГ →
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Кейс 3 -->
+                <div class="bento-card rounded-3xl p-6 flex flex-col justify-between reveal">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 rounded-full bg-purple-500/15 text-purple-400 text-xs font-mono font-semibold">TELEGRAM MINI APP</span>
+                            <i data-lucide="arrow-up-right" class="w-5 h-5 text-slate-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Магазин цифровых товаров с авто-оплатой</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            Веб-приложение внутри Telegram с каталогом товаров, мгновенной оплатой через CryptoBot (USDT) и Telegram Stars, автоматической выдачей товара и уведомлениями.
+                        </p>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap gap-1.5 mb-5">
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">WebApp</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">CryptoBot</span>
+                            <span class="px-2.5 py-1 rounded-md bg-white/5 text-xs font-mono text-slate-400">TG Stars</span>
+                        </div>
+                        <a href="tg://resolve?domain=marssov" class="w-full py-3 rounded-xl bg-white/5 hover:bg-blue-600 text-center text-sm font-medium text-white transition block">
+                            Запросить демо в ЛС →
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="order">
-        <h2 class="section-title">Быстрый расчёт и переход в директ</h2>
-        <p class="section-subtitle">Отметьте нужные задачи — откроется чат со мной в Telegram с уже готовым ТЗ</p>
-        <div class="order-box">
-            <span class="category-label">1. Разработка (Кодинг и запуск)</span>
-            <div class="checkbox-group">
-                <label class="check-item"><input type="checkbox" value="Telegram-бот" class="service-check"> Telegram-бот</label>
-                <label class="check-item"><input type="checkbox" value="Автооплата (Stars / CryptoBot)" class="service-check"> Оплата Stars / CryptoBot</label>
-                <label class="check-item"><input type="checkbox" value="Веб-админ панель" class="service-check"> Веб-админка</label>
-                <label class="check-item"><input type="checkbox" value="Сайт / Лендинг под ключ" class="service-check"> Сайт / Лендинг</label>
-            </div>
-            <span class="category-label">2. Копирайтинг и упаковка</span>
-            <div class="checkbox-group">
-                <label class="check-item"><input type="checkbox" value="Посты для ТГ-канала" class="service-check"> Посты для ТГ-канала</label>
-                <label class="check-item"><input type="checkbox" value="Тексты для воронки в боте" class="service-check"> Тексты для воронки бота</label>
-                <label class="check-item"><input type="checkbox" value="Рекламный пост (посев)" class="service-check"> Рекламный креатив</label>
-                <label class="check-item"><input type="checkbox" value="Тексты для сайта" class="service-check"> Тексты для лендинга</label>
-            </div>
-            <div style="margin-top: 20px;">
-                <label style="font-weight: 600;">3. Кратко опишите вашу идею или задачу (необязательно):</label>
-                <textarea id="task-desc" placeholder="Например: Нужен бот для продажи доступа в закрытый канал с оплатой в USDT и 3 прогревающих поста..."></textarea>
-            </div>
-            <button onclick="sendToTelegram()" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 25px; font-size: 1.05rem;">
-                ✉️ Отправить заявку в директ (@MarssovDev)
-            </button>
-        </div>
-    </section>
+        <!-- УМНЫЙ КОНСТРУКТОР ТЗ -->
+        <section id="calculator" class="py-20 px-4 sm:px-6 max-w-4xl mx-auto">
+            <div class="bento-card rounded-3xl p-6 sm:p-10 border-blue-500/20 reveal">
+                <div class="text-center mb-10">
+                    <span class="text-blue-400 font-mono text-sm uppercase tracking-wider">// Быстрый старт</span>
+                    <h2 class="text-3xl sm:text-4xl font-bold mt-2">Соберите ТЗ за 30 секунд</h2>
+                    <p class="text-slate-400 mt-2 text-sm sm:text-base">
+                        Отметьте нужные модули — система сама сформирует заявку и откроет чат со мной в Telegram
+                    </p>
+                </div>
 
-    <footer>
-        <div class="footer-links">
-            <a href="tg://resolve?domain=MarssovDev">Личные сообщения (@MarssovDev)</a>
-            <a href="tg://resolve?domain=marssovq">Канал с кейсами (@marssovq)</a>
+                <!-- Шаг 1 -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-blue-400 mb-4">1. Разработка и архитектура</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Сайт / Веб-приложение" data-days="3">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Сайт / Веб-приложение</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Telegram Mini App (TMA)" data-days="4">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Telegram Mini App (TMA)</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Telegram-бот под ключ" data-days="2">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Telegram-бот под ключ</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Веб-админка / Панель логов" data-days="3">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Веб-админка / Панель логов</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="CRMP/SAMP (Лаунчер / Форум)" data-days="4">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">CRMP/SAMP (Лаунчер / Форум)</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Автооплата (Stars / CryptoBot / Карты)" data-days="1">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Автооплата (Stars / CryptoBot)</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Шаг 2 -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-purple-400 mb-4">2. Дополнительно (Упаковка и запуск)</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Продающие тексты для сайта/бота" data-days="1">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Продающие тексты для проекта</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" class="task-checkbox hidden" value="Настройка сервера (VPS) и деплой" data-days="1">
+                            <div class="task-label p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3.5 transition">
+                                <div class="check-box w-5 h-5 rounded-md border border-slate-600 flex items-center justify-center transition">
+                                    <i data-lucide="check" class="check-icon w-3.5 h-3.5 text-white opacity-0 transform scale-50 transition"></i>
+                                </div>
+                                <span class="text-sm font-medium">Деплой на сервер 24/7</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Шаг 3 -->
+                <div class="mb-8">
+                    <h3 class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3">3. Опишите суть задачи или идею (необязательно)</h3>
+                    <textarea id="project-desc" rows="3" placeholder="Например: Нужен сайт с авто-донатом и админ-панель с логами для нашего CRMP-проекта..." class="w-full rounded-2xl bg-black/40 border border-white/10 focus:border-blue-500 focus:outline-none p-4 text-sm text-white placeholder-slate-500 transition"></textarea>
+                </div>
+
+                <!-- Индикатор расчёта -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-6">
+                    <div class="text-sm text-slate-300">
+                        Выбрано модулей: <span id="selected-count" class="font-bold text-white font-mono">0</span>
+                    </div>
+                    <div class="text-sm text-slate-300">
+                        Примерный срок запуска: <span id="estimated-days" class="font-bold text-blue-400 font-mono">индивидуально</span>
+                    </div>
+                </div>
+
+                <button onclick="sendToTelegram()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-base shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all flex items-center justify-center gap-2.5 cursor-pointer">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                    <span>Отправить заявку в Telegram (@marssov)</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ФУТЕР -->
+    <footer class="border-t border-white/5 py-10 px-4 text-center text-sm text-slate-500 relative z-10">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="font-bold text-slate-300">Marssov<span class="text-blue-500">Dev</span> © 2026</div>
+            <div class="flex items-center gap-6">
+                <a href="tg://resolve?domain=marssov" class="hover:text-blue-400 transition">Личка Telegram (@marssov)</a>
+                <a href="tg://resolve?domain=marssovq" class="hover:text-blue-400 transition">Портфолио-канал (@marssovq)</a>
+            </div>
         </div>
-        <p>© 2026 MarssovDev — Веб-разработка, Telegram-боты и Копирайтинг</p>
     </footer>
 
     <script>
-        function switchTab(tabName, btnElement) {
-            document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
-            document.querySelectorAll('.tab-content').forEach(function(content) { content.classList.remove('active'); });
-            btnElement.classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
+        lucide.createIcons();
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        function filterServices(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById('btn-' + category);
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+            activeBtn.classList.remove('text-slate-400');
+
+            document.querySelectorAll('.service-card').forEach(card => {
+                const categories = card.getAttribute('data-category');
+                if (category === 'all' || categories.includes(category)) {
+                    card.style.display = 'block';
+                    setTimeout(() => card.style.opacity = '1', 50);
+                } else {
+                    card.style.opacity = '0';
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            });
         }
 
+        const checkboxes = document.querySelectorAll('.task-checkbox');
+        const countEl = document.getElementById('selected-count');
+        const daysEl = document.getElementById('estimated-days');
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                const checked = document.querySelectorAll('.task-checkbox:checked');
+                countEl.textContent = checked.length;
+
+                if (checked.length === 0) {
+                    daysEl.textContent = 'индивидуально';
+                } else {
+                    let totalDays = 0;
+                    checked.forEach(item => totalDays += parseInt(item.getAttribute('data-days')));
+                    daysEl.textContent = `от ${totalDays} дн.`;
+                }
+            });
+        });
+
         function sendToTelegram() {
-            var username = "MarssovDev"; 
-            var checkboxes = document.querySelectorAll('.service-check:checked');
-            var selected = [];
-            checkboxes.forEach(function(cb) { selected.push(cb.value); });
-            var desc = document.getElementById('task-desc').value.trim();
+            const checked = document.querySelectorAll('.task-checkbox:checked');
+            const desc = document.getElementById('project-desc').value.trim();
+            
+            let tasks = [];
+            checked.forEach(cb => tasks.push('• ' + cb.value));
 
-            var message = "Привет, Ахмад! Пишу с твоего сайта-портфолио.\n";
-            if (selected.length > 0) {
-                message += "Интересуют услуги: " + selected.join(", ") + ".\n";
+            let message = "Привет, Ахмад! Хочу обсудить разработку проекта 🚀\n\n";
+            
+            if (tasks.length > 0) {
+                message += "📋 Выбранные задачи:\n" + tasks.join('\n') + "\n\n";
             }
-            if (desc !== "") {
-                message += "Задача: " + desc;
+            if (desc) {
+                message += "💬 Описание идеи:\n" + desc + "\n\n";
+            }
+            if (tasks.length === 0 && !desc) {
+                message += "Нужна консультация по запуску проекта под ключ.";
             }
 
-            var encodedMessage = encodeURIComponent(message);
-            var tgAppUrl = "tg://resolve?domain=" + username + "&text=" + encodedMessage;
-            var webUrl = "https://t.me" + username + "?text=" + encodedMessage;
-
-            window.location.href = tgAppUrl;
-
-            setTimeout(function() {
-                window.location.href = webUrl;
-            }, 1500);
+            const encodedText = encodeURIComponent(message);
+            window.location.href = `tg://resolve?domain=marssov&text=${encodedText}`;
         }
     </script>
 </body>
